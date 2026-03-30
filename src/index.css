@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  background: #D1DFEB; /* fallback while canvas initialises */
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+/* ── Reading Mode nav overlay ── */
+.rm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  pointer-events: none;
+}
+
+.rm-nav {
+  pointer-events: auto;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid #002366;
+  color: #002366;
+  font-size: 2.8rem;
+  line-height: 1;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 300;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+.rm-nav:hover {
+  background: #002366;
+  color: white;
+}
+
+.rm-nav--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rm-page-info {
+  pointer-events: none;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #002366;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+/* ── Page title fade-in ── */
+.page-title-fade {
+  animation: titleFadeIn 0.6s ease forwards;
+}
+
+@keyframes titleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 0.8;
+    transform: translateY(0);
+  }
+}
+
+/* ── Index panel slide-in (from left) ── */
+.index-panel {
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 8px 0 40px rgba(0, 0, 0, 0.25);
+}
+
+.index-panel.open {
+  transform: translateX(0);
+}
+
+/* ── Index item focus styles ── */
+.index-item:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: -2px;
+}
