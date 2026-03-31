@@ -52,7 +52,7 @@ function buildIndexEntries(): IndexEntry[] {
       spreadNumber: i,
       leftTexture: pages[i - 1].back,
       rightTexture: pages[i].front,
-      label: `Spread ${String(i).padStart(2, "0")}`,
+      label: pages[i].title,
     });
   }
 
@@ -91,7 +91,7 @@ export const IndexPanel = () => {
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-[7] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[14] transition-opacity duration-300 ${
           indexOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
@@ -106,7 +106,7 @@ export const IndexPanel = () => {
         role="dialog"
         aria-label="Page Index"
         tabIndex={-1}
-        className={`index-panel fixed left-0 w-[300px] z-[9] bg-[#002366] text-white flex flex-col outline-none ${
+        className={`index-panel fixed left-0 w-[300px] z-[15] bg-[#002366] text-white flex flex-col outline-none ${
           indexOpen ? "open" : ""
         }`}
         style={{ top: 80, height: "calc(100vh - 80px)" }}

@@ -19,16 +19,9 @@ const CameraRig = ({ isReadingMode }: CameraRigProps) => {
 
   useEffect(() => {
     if (!isReadingMode) {
-      // Hand camera back to OrbitControls from a known good position
-      camera.position.set(-0.5, 1, 4);
+      camera.position.set(-0.5, 0, 4);
     }
   }, [isReadingMode]); // camera is a stable R3F ref — intentionally omitted
-
-  useFrame((_, delta) => {
-    if (!isReadingMode) return; // OrbitControls handles 3D mode
-    easing.damp3(camera.position, [0, 2.8, 1.0], 0.5, delta);
-    camera.lookAt(0, 0, 0);
-  });
 
   return null;
 };
@@ -47,14 +40,14 @@ const BookGroup = ({ isReadingMode }: BookGroupProps) => {
     if (!groupRef.current) return;
     easing.dampE(
       groupRef.current.rotation,
-      isReadingMode ? [-Math.PI / 2, 0, 0] : [-Math.PI / 4, 0, 0],
+      [0, 0, 0],
       0.5,
       delta
     );
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={1.5}>
       <Float
         floatIntensity={isReadingMode ? 0 : 0.6}
         speed={isReadingMode ? 0 : 1.2}
@@ -75,12 +68,12 @@ export const Experience = () => {
       <BookGroup isReadingMode={isReadingMode} />
 
       {/* Disable orbit in reading mode so camera rig isn't fought */}
-      <OrbitControls enabled={!isReadingMode} makeDefault />
+      <OrbitControls makeDefault minDistance={1.5} maxDistance={8} />
 
-      <Environment preset="studio" />
+      <Environment preset="studio" environmentIntensity={0.35} />
       <directionalLight
-        position={[2, 5, 2]}
-        intensity={2.5}
+        position={[2, 3, 2]}
+        intensity={0.8}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}

@@ -26,10 +26,10 @@ import { pageAtom, PageData, pages } from "./UI";
 const EASING_FACTOR = 0.5;
 const EASING_FACTOR_FOLD = 0.3;
 const INSIDE_CURVE_STRENGTH = 0.18;
-const OUTSIDE_CURVE_STRENGTH = 0.05;
+const OUTSIDE_CURVE_STRENGTH = 0.04;
 const TURNING_CURVE_STRENGTH = 0.09;
 
-const PAGE_WIDTH = 1.28;
+const PAGE_WIDTH = 1.30;
 const PAGE_HEIGHT = 1.71;
 const PAGE_DEPTH = 0.003;
 const PAGE_SEGMENTS = 30;
@@ -66,7 +66,7 @@ pageGeometry.setAttribute("skinWeight", new Float32BufferAttribute(skinWeights, 
 // ─── Shared materials (side faces, spine) ────────────────────────────────────
 
 const whiteColor = new Color("white");
-const emissiveColor = new Color("orange");
+const emissiveColor = new Color("pink");
 
 const pageMaterials = [
   new MeshStandardMaterial({ color: whiteColor }),
@@ -115,7 +115,7 @@ const Page = ({ number, front, back, page, opened, bookClosed }: PageProps) => {
 
   // State declared before useFrame so it's in scope
   const [_, setPage] = useAtom(pageAtom);
-  const [highlighted, setHighlighted] = useState(false);
+const [highlighted, setHighlighted] = useState(false);
   useCursor(highlighted);
 
   const manualSkinnedMesh = useMemo(() => {
@@ -133,14 +133,14 @@ const Page = ({ number, front, back, page, opened, bookClosed }: PageProps) => {
       new MeshStandardMaterial({
         color: whiteColor,
         map: picture,
-        roughness: 0.3,
+        roughness: 0.25,
         emissive: emissiveColor,
         emissiveIntensity: 0,
       }),
       new MeshStandardMaterial({
         color: whiteColor,
         map: picture2,
-        roughness: 0.3,
+        roughness: 0.25,
         emissive: emissiveColor,
         emissiveIntensity: 0,
       }),

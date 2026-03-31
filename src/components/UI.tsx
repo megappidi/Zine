@@ -17,13 +17,13 @@ export const modeAtom = atom<boolean>(false); // false = 3D, true = Reading
 export const indexOpenAtom = atom<boolean>(false);
 
 const pageTitles = [
-  "Cover",
-  "Chapter 01",
-  "Chapter 02",
-  "Chapter 03",
-  "Chapter 04",
-  "Chapter 05",
-  "Back Cover",
+  "Cover - Manifesto",
+  "Index",
+  "Who I am",
+  "How I think",
+  "Creativity + Technology",
+  "Generalist Vs AI",
+  "Coloring outside the lines",
 ];
 
 export const pages: PageData[] = [];
@@ -134,7 +134,7 @@ export const UI = () => {
         {/* Page title — fades in on page change via key trick */}
         <span
           key={page}
-          className="page-title-fade text-[11px] uppercase tracking-[0.2em] text-[#002366] font-bold opacity-80"
+          className={`page-title-fade text-[11px] uppercase tracking-[0.2em] font-bold opacity-80 ${isReadingMode ? "text-white" : "text-[#002366]"}`}
         >
           {currentTitle}
         </span>
@@ -177,7 +177,7 @@ export const UI = () => {
         </div>
 
         {/* Keyboard hint */}
-        <span className="text-[9px] uppercase tracking-widest text-[#002366]/50">
+        <span className={`text-[9px] uppercase tracking-widest ${isReadingMode ? "text-white/50" : "text-[#002366]/50"}`}>
           ← → keys to navigate
         </span>
       </div>
