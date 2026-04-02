@@ -1,5 +1,5 @@
 import { atom, useAtom } from "jotai";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export type PageData = {
   front: string;
@@ -7,14 +7,18 @@ export type PageData = {
   title: string;
 };
 
-const pictures: string[] = [
+const HEADER_BUTTON_CLASS =
+  "bg-white text-[#002366] px-6 py-2 border-2 border-[#002366] font-bold hover:bg-[#002366] hover:text-white transition-all shadow-[4px_4px_0px_#002366]";
+
+const pictures = [
   "14", "15", "16", "17", "18", "19", "20",
   "21", "22", "23", "24", "25", "26", "27",
-];
+] as const;
 
 export const pageAtom = atom<number>(0);
 export const modeAtom = atom<boolean>(false); // false = 3D, true = Reading
 export const indexOpenAtom = atom<boolean>(false);
+export const skyAtom = atom<boolean>(false); // false = paper overlay, true = sky visible
 
 const pageTitles = [
   "Cover - Manifesto",
@@ -24,32 +28,52 @@ const pageTitles = [
   "Creativity + Technology",
   "Generalist Vs AI",
   "Coloring outside the lines",
-];
+] as const;
 
-export const pages: PageData[] = [];
-for (let i = 0; i < pictures.length; i += 2) {
-  pages.push({
-    front: pictures[i],
-    back: pictures[i + 1],
-    title: pageTitles[i / 2] ?? `Page ${i / 2 + 1}`,
-  });
+export const pages: PageData[] = Array.from({ length: Math.ceil(pictures.length / 2) }, (_, index) => ({
+  front: pictures[index * 2],
+  back: pictures[index * 2 + 1],
+  title: pageTitles[index] ?? `Page ${index + 1}`,
+}));
+
+function getIndexButtonClass(isReadingMode: boolean, indexOpen: boolean) {
+  if (isReadingMode) {
+    return indexOpen
+      ? "bg-white text-[#0a1628] border-white"
+      : "bg-transparent text-white border-white hover:bg-white hover:text-[#0a1628]";
+  }
+
+  return indexOpen
+    ? "bg-[#002366] text-white border-[#002366]"
+    : "bg-white text-[#002366] border-[#002366] hover:bg-[#002366] hover:text-white";
+}
+
+function getProgressSegmentClass(isReadingMode: boolean, isActive: boolean, isFilled: boolean) {
+  if (isReadingMode) {
+    if (isActive) return "bg-white h-full";
+    if (isFilled) return "bg-white/60 h-3/4";
+    return "bg-white/20 h-1/2 hover:bg-white/40 hover:h-3/4";
+  }
+
+  if (isActive) return "bg-[#002366] h-full";
+  if (isFilled) return "bg-[#002366]/60 h-3/4";
+  return "bg-[#002366]/20 h-1/2 hover:bg-[#002366]/40 hover:h-3/4";
 }
 
 export const UI = () => {
   const [page, setPage] = useAtom(pageAtom);
   const [isReadingMode, setIsReadingMode] = useAtom(modeAtom);
   const [indexOpen, setIndexOpen] = useAtom(indexOpenAtom);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [, setSkyVisible] = useAtom(skyAtom);
+  const skyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    const audio = new Audio("/podcast.mp3");
-    audioRef.current = audio;
-    return () => {
-      audio.pause();
-      audio.src = "";
-    };
-  }, []);
+  useEffect(() => () => { if (skyTimerRef.current) clearTimeout(skyTimerRef.current); }, []);
+
+  const handleTitleClick = () => {
+    setSkyVisible(true);
+    if (skyTimerRef.current) clearTimeout(skyTimerRef.current);
+    skyTimerRef.current = setTimeout(() => setSkyVisible(false), 5000);
+  };
 
   // Keyboard navigation
   useEffect(() => {
@@ -60,23 +84,7 @@ export const UI = () => {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []); // jotai setters are stable — no deps needed
-
-  const toggleAudio = () => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      audioRef.current
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch(() => {
-          setIsPlaying(false);
-          console.warn("podcast.mp3 not found in /public");
-        });
-    }
-  };
+  }, [setIndexOpen, setPage]);
 
   const currentTitle = pages[Math.min(page, pages.length - 1)]?.title ?? "";
 
@@ -84,14 +92,17 @@ export const UI = () => {
     <main className="fixed inset-0 z-10 pointer-events-none select-none flex flex-col justify-between p-8 font-mono">
       {/* HEADER */}
       <div className="flex justify-between items-start pointer-events-auto">
-        <div className="bg-[#002366] text-white p-3 border-2 border-white shadow-lg">
+        <button
+          onClick={handleTitleClick}
+          className={HEADER_BUTTON_CLASS}
+        >
           <h1 className="font-bold uppercase tracking-tighter text-sm md:text-base">
             Poetic Engineer // Lab_Session
           </h1>
-        </div>
+        </button>
         <button
           onClick={() => setIsReadingMode(!isReadingMode)}
-          className="bg-white text-[#002366] px-6 py-2 border-2 border-[#002366] font-bold hover:bg-[#002366] hover:text-white transition-all shadow-[4px_4px_0px_#002366]"
+          className={HEADER_BUTTON_CLASS}
         >
           {isReadingMode ? "← 3D VIEW" : "READING MODE →"}
         </button>
@@ -99,38 +110,6 @@ export const UI = () => {
 
       {/* FOOTER */}
       <div className="flex flex-col items-center gap-4 pointer-events-auto">
-        {/* Podcast player */}
-        <div className="bg-[#002366] text-white p-4 border-2 border-white shadow-2xl flex items-center gap-6">
-          <button
-            onClick={toggleAudio}
-            className="text-2xl hover:scale-110 transition-transform"
-          >
-            {isPlaying ? "⏸" : "▶"}
-          </button>
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase opacity-60">
-              NotebookLM Audio
-            </span>
-            <span className="text-xs font-bold uppercase tracking-widest">
-              Manifesto_Deep_Dive.mp3
-            </span>
-          </div>
-          <div className="flex gap-1 items-end h-4">
-            <div
-              className={`w-1 bg-white ${isPlaying ? "animate-bounce" : ""}`}
-              style={{ height: "60%" }}
-            />
-            <div
-              className={`w-1 bg-white ${isPlaying ? "animate-bounce delay-75" : ""}`}
-              style={{ height: "100%" }}
-            />
-            <div
-              className={`w-1 bg-white ${isPlaying ? "animate-bounce delay-150" : ""}`}
-              style={{ height: "40%" }}
-            />
-          </div>
-        </div>
-
         {/* Page title — fades in on page change via key trick */}
         <span
           key={page}
@@ -144,11 +123,10 @@ export const UI = () => {
           {/* INDEX toggle — left side */}
           <button
             onClick={() => setIndexOpen(!indexOpen)}
-            className={`px-3 py-1 border-2 font-bold text-xs uppercase tracking-widest transition-all flex-shrink-0 ${
-              indexOpen
-                ? "bg-[#002366] text-white border-[#002366]"
-                : "bg-white text-[#002366] border-[#002366] hover:bg-[#002366] hover:text-white"
-            }`}
+            className={`px-3 py-1 border-2 font-bold text-xs uppercase tracking-widest transition-all flex-shrink-0 ${getIndexButtonClass(
+              isReadingMode,
+              indexOpen,
+            )}`}
           >
             ▦ INDEX
           </button>
@@ -163,13 +141,11 @@ export const UI = () => {
                   key={idx}
                   onClick={() => setPage(idx)}
                   title={pages[Math.min(idx, pages.length - 1)]?.title}
-                  className={`progress-segment flex-1 rounded-sm transition-all duration-200 ${
-                    isActive
-                      ? "bg-[#002366] h-full"
-                      : isFilled
-                      ? "bg-[#002366]/60 h-3/4"
-                      : "bg-[#002366]/20 h-1/2 hover:bg-[#002366]/40 hover:h-3/4"
-                  }`}
+                  className={`progress-segment flex-1 rounded-sm transition-all duration-200 ${getProgressSegmentClass(
+                    isReadingMode,
+                    isActive,
+                    isFilled,
+                  )}`}
                 />
               );
             })}

@@ -11,7 +11,13 @@
 body {
   margin: 0;
   overflow: hidden;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M16,4 L18.94,11.95 L27.41,12.29 L20.76,17.55 L23.05,25.71 L16,21 L8.95,25.71 L11.24,17.55 L4.59,12.29 L13.06,11.95 Z' fill='%23002366' stroke='white' stroke-width='1'/%3E%3C/svg%3E") 16 16, auto;
 }
+
+button, a, [role="button"] {
+  cursor: pointer;
+}
+
 
 /* ── Reading Mode — fullscreen flat spread ── */
 .rm-overlay {
@@ -19,7 +25,6 @@ body {
   inset: 0;
   /* z-index 9 = below the UI chrome (z-10) so header/footer/buttons stay visible */
   z-index: 9;
-  background: #0a1628;
   display: flex;
   align-items: center;
   justify-content: space-between;

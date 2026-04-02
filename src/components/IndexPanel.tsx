@@ -33,6 +33,42 @@ type BackCoverEntry = {
 
 type IndexEntry = CoverEntry | SpreadEntry | BackCoverEntry;
 
+function IndexThumbnail({ entry }: { entry: IndexEntry }) {
+  if (entry.type === "cover" || entry.type === "backcover") {
+    return (
+      <div className="w-[52px] h-[68px] flex-shrink-0 overflow-hidden bg-white/10 rounded-sm">
+        <img
+          src={`/textures/${entry.texture}.jpg`}
+          alt={entry.label}
+          className="w-full h-full object-cover opacity-90"
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-[2px] flex-shrink-0">
+      <div className="w-[38px] h-[52px] overflow-hidden bg-white/10 rounded-l-sm">
+        <img
+          src={`/textures/${entry.leftTexture}.jpg`}
+          alt="left page"
+          className="w-full h-full object-cover opacity-90"
+          loading="lazy"
+        />
+      </div>
+      <div className="w-[38px] h-[52px] overflow-hidden bg-white/10 rounded-r-sm">
+        <img
+          src={`/textures/${entry.rightTexture}.jpg`}
+          alt="right page"
+          className="w-full h-full object-cover opacity-90"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  );
+}
+
 function buildIndexEntries(): IndexEntry[] {
   const entries: IndexEntry[] = [];
 
@@ -140,38 +176,7 @@ export const IndexPanel = () => {
                     : "border-transparent"
                 }`}
               >
-                {/* Thumbnail(s) */}
-                {entry.type === "cover" || entry.type === "backcover" ? (
-                  /* Single thumbnail for cover / back cover */
-                  <div className="w-[52px] h-[68px] flex-shrink-0 overflow-hidden bg-white/10 rounded-sm">
-                    <img
-                      src={`/textures/${entry.texture}.jpg`}
-                      alt={entry.label}
-                      className="w-full h-full object-cover opacity-90"
-                      loading="lazy"
-                    />
-                  </div>
-                ) : (
-                  /* Two thumbnails side-by-side for spreads */
-                  <div className="flex gap-[2px] flex-shrink-0">
-                    <div className="w-[38px] h-[52px] overflow-hidden bg-white/10 rounded-l-sm">
-                      <img
-                        src={`/textures/${entry.leftTexture}.jpg`}
-                        alt="left page"
-                        className="w-full h-full object-cover opacity-90"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="w-[38px] h-[52px] overflow-hidden bg-white/10 rounded-r-sm">
-                      <img
-                        src={`/textures/${entry.rightTexture}.jpg`}
-                        alt="right page"
-                        className="w-full h-full object-cover opacity-90"
-                        loading="lazy"
-                      />
-                    </div>
-                  </div>
-                )}
+                <IndexThumbnail entry={entry} />
 
                 {/* Label */}
                 <div className="flex flex-col gap-1 min-w-0">

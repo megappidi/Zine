@@ -7,6 +7,20 @@ import * as THREE from "three";
 import { Book } from "./Book";
 import { modeAtom } from "./UI";
 
+const CursorGuard = () => {
+  const { gl } = useThree();
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      if (gl.domElement.style.cursor) gl.domElement.style.cursor = "";
+    });
+    observer.observe(gl.domElement, { attributes: true, attributeFilter: ["style"] });
+    return () => observer.disconnect();
+  }, [gl]);
+  return null;
+};
+
+const DEFAULT_CAMERA_POSITION: [number, number, number] = [-0.5, 0, 4];
+
 type CameraRigProps = { isReadingMode: boolean };
 
 /**
@@ -19,7 +33,7 @@ const CameraRig = ({ isReadingMode }: CameraRigProps) => {
 
   useEffect(() => {
     if (!isReadingMode) {
-      camera.position.set(-0.5, 0, 4);
+      camera.position.set(...DEFAULT_CAMERA_POSITION);
     }
   }, [isReadingMode]); // camera is a stable R3F ref — intentionally omitted
 
@@ -64,6 +78,7 @@ export const Experience = () => {
 
   return (
     <>
+      <CursorGuard />
       <CameraRig isReadingMode={isReadingMode} />
       <BookGroup isReadingMode={isReadingMode} />
 
@@ -75,8 +90,8 @@ export const Experience = () => {
         position={[2, 3, 2]}
         intensity={0.8}
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
         shadow-bias={-0.0001}
       />
 

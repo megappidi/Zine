@@ -5,11 +5,17 @@ import { useEffect, useRef } from "react";
 import { FlipBook } from "../lib/flipbook/FlipBook";
 import { pageAtom, pages } from "./UI";
 
-// flat array: front then back for each sheet
 const pageSources = pages.flatMap((p) => [
   `/textures/${p.front}.jpg`,
   `/textures/${p.back}.jpg`,
 ]);
+
+const MAX_PAGE_STATE = pages.length;
+const READING_CAMERA = { position: [0, 0, 5] as const, zoom: 130 };
+
+function clampPage(page: number) {
+  return Math.max(0, Math.min(MAX_PAGE_STATE, page));
+}
 
 const FlipScene = () => {
   const [page] = useAtom(pageAtom);
@@ -17,7 +23,7 @@ const FlipScene = () => {
   const { scene, gl, camera } = useThree();
 
   useEffect(() => {
-    gl.setClearColor("#0a1628", 1);
+    gl.setClearColor(0x000000, 0);
 
     // Camera: slightly above and in front — same angle as the demo
     camera.position.set(0, 0, 5);
@@ -63,7 +69,7 @@ export const ReadingMode = () => {
     <div className="rm-overlay">
       <button
         className={`rm-nav${page <= 0 ? " rm-nav--hidden" : ""}`}
-        onClick={() => setPage(Math.max(0, page - 1))}
+        onClick={() => setPage(clampPage(page - 1))}
         aria-label="Previous page"
       >
         &#8249;
@@ -74,14 +80,16 @@ export const ReadingMode = () => {
         onClick={(e) => {
           const { left, width } = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
           const isRightHalf = e.clientX - left > width / 2;
-          if (isRightHalf) setPage((p) => Math.min(pages.length, p + 1));
-          else setPage((p) => Math.max(0, p - 1));
+          if (isRightHalf) setPage((p) => clampPage(p + 1));
+          else setPage((p) => clampPage(p - 1));
         }}
         style={{ cursor: "pointer" }}
       >
         <Canvas
           orthographic
-          camera={{ position: [0, 0, 5], zoom: 130 }}
+          dpr={[1, 1.5]}
+          camera={READING_CAMERA}
+          gl={{ alpha: true }}
           style={{ width: "100%", height: "100%" }}
         >
           <FlipScene />
@@ -90,7 +98,7 @@ export const ReadingMode = () => {
 
       <button
         className={`rm-nav${page >= pages.length ? " rm-nav--hidden" : ""}`}
-        onClick={() => setPage(Math.min(pages.length, page + 1))}
+        onClick={() => setPage(clampPage(page + 1))}
         aria-label="Next page"
       >
         &#8250;

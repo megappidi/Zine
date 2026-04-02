@@ -114,8 +114,8 @@ const Page = ({ number, front, back, page, opened, bookClosed }: PageProps) => {
   const lastOpened = useRef<boolean>(opened);
 
   // State declared before useFrame so it's in scope
-  const [_, setPage] = useAtom(pageAtom);
-const [highlighted, setHighlighted] = useState(false);
+  const [, setPage] = useAtom(pageAtom);
+  const [highlighted, setHighlighted] = useState(false);
   useCursor(highlighted);
 
   const manualSkinnedMesh = useMemo(() => {
@@ -153,7 +153,7 @@ const [highlighted, setHighlighted] = useState(false);
     mesh.add(skeleton.bones[0]);
     mesh.bind(skeleton);
     return mesh;
-  }, [picture, picture2, number]);
+  }, [picture, picture2]);
 
   useFrame((_, delta) => {
     const mesh = skinnedMeshRef.current;
