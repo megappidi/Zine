@@ -2,10 +2,16 @@ import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouse
 import { motion } from 'motion/react';
 import { HardwareButton, Screw } from './HardwareButton';
 import { InteractiveScrubber } from './InteractiveScrubber';
-import { AUDIO_SRC, NOISE } from './shared';
+import { NOISE } from './shared';
 
 interface PodcastPlayerProps {
   onMinimize?: () => void;
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  onTogglePlay: () => void;
+  onSeekBy: (delta: number) => void;
+  onSeek: (t: number) => void;
 }
 
 const VISUALIZER_PIXEL_RATIO = 1.5;
@@ -20,14 +26,10 @@ function PauseIcon() {
   );
 }
 
-export function PodcastPlayer({ onMinimize }: PodcastPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(180);
+export function PodcastPlayer({ onMinimize, isPlaying, currentTime, duration, onTogglePlay, onSeekBy, onSeek }: PodcastPlayerProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
 
-  const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tiltRef = useRef<HTMLDivElement>(null);
   const dragStart = useRef({ x: 0, y: 0 });
@@ -39,6 +41,7 @@ export function PodcastPlayer({ onMinimize }: PodcastPlayerProps) {
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
+
 
   useEffect(() => {
     let raf: number;
@@ -203,28 +206,6 @@ export function PodcastPlayer({ onMinimize }: PodcastPlayerProps) {
     };
   }, [isDragging]);
 
-  const togglePlay = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    isPlaying ? audio.pause() : audio.play().catch(console.warn);
-  }, [isPlaying]);
-
-  const seekBy = useCallback(
-    (delta: number) => {
-      const audio = audioRef.current;
-      if (!audio) return;
-      audio.currentTime = Math.max(0, Math.min(audio.duration || duration, audio.currentTime + delta));
-      setCurrentTime(audio.currentTime);
-    },
-    [duration],
-  );
-
-  const handleSeek = useCallback((t: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = t;
-    setCurrentTime(t);
-  }, []);
 
   const onMouseMove = useCallback(
     (e: ReactMouseEvent<HTMLDivElement>) => {
@@ -454,7 +435,7 @@ export function PodcastPlayer({ onMinimize }: PodcastPlayerProps) {
                   onMouseDown={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
                 >
-                  <InteractiveScrubber currentTime={currentTime} duration={duration} onSeek={handleSeek} />
+                  <InteractiveScrubber currentTime={currentTime} duration={duration} onSeek={onSeek} />
                 </div>
                 <div
                   className="absolute inset-0 pointer-events-none"
@@ -510,10 +491,10 @@ export function PodcastPlayer({ onMinimize }: PodcastPlayerProps) {
                   }}
                 />
                 <div className="flex items-center justify-center gap-5">
-                  <HardwareButton id="back" onClick={() => seekBy(-10)} label="-10s" w={82} h={46} />
+                  <HardwareButton id="back" onClick={() => onSeekBy(-10)} label="-10s" w={82} h={46} />
                   <HardwareButton
                     id="play"
-                    onClick={togglePlay}
+                    onClick={onTogglePlay}
                     label={isPlaying ? 'PAUSE' : 'PLAY'}
                     w={74}
                     h={56}
@@ -534,7 +515,7 @@ export function PodcastPlayer({ onMinimize }: PodcastPlayerProps) {
                       )
                     }
                   />
-                  <HardwareButton id="fwd" onClick={() => seekBy(10)} label="+10s" w={82} h={46} />
+                  <HardwareButton id="fwd" onClick={() => onSeekBy(10)} label="+10s" w={82} h={46} />
                 </div>
               </div>
             </div>
@@ -542,23 +523,6 @@ export function PodcastPlayer({ onMinimize }: PodcastPlayerProps) {
         </motion.div>
       </div>
 
-      <audio
-        ref={audioRef}
-        src={AUDIO_SRC}
-        preload="metadata"
-        onLoadedMetadata={() => {
-          if (audioRef.current) setDuration(audioRef.current.duration);
-        }}
-        onTimeUpdate={() => {
-          if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
-        }}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onEnded={() => {
-          setIsPlaying(false);
-          setCurrentTime(0);
-        }}
-      />
     </div>
   );
 }

@@ -23,8 +23,8 @@ function App() {
       {/* Reading mode overlay: prev/next nav rendered on top of the 3D canvas */}
       {isReadingMode && <ReadingMode />}
       <AudioPlayer />
-      {/* Canvas stops 170px above bottom so the 3D scene never hides behind the footer UI */}
-      <div className="fixed inset-0" style={{ bottom: 170, pointerEvents: 'all', zIndex: 2, display: isReadingMode ? 'none' : 'block' }}>
+      {/* Canvas stops above the footer UI so the 3D scene never hides behind the player */}
+      <div className="app-scene fixed inset-0" style={{ pointerEvents: 'all', zIndex: 2, display: isReadingMode ? 'none' : 'block' }}>
         <Canvas
           shadows
           dpr={[1, 1.5]}

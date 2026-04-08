@@ -97,7 +97,7 @@ function buildIndexEntries(): IndexEntry[] {
     type: "backcover",
     pageState: pages.length,
     texture: pages[pages.length - 1].back,
-    label: pages[pages.length - 1].title,
+    label: "Back Cover",
   });
 
   return entries;
@@ -142,10 +142,9 @@ export const IndexPanel = () => {
         role="dialog"
         aria-label="Page Index"
         tabIndex={-1}
-        className={`index-panel fixed left-0 w-[300px] z-[15] bg-[#002366] text-white flex flex-col outline-none ${
+        className={`app-index-panel index-panel fixed left-0 z-[15] bg-[#002366] text-white flex flex-col outline-none ${
           indexOpen ? "open" : ""
         }`}
-        style={{ top: 80, height: "calc(100vh - 80px)" }}
       >
         {/* Panel header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/20">

@@ -1,20 +1,32 @@
-import { useCallback, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
+import { useCallback, type MouseEvent as ReactMouseEvent } from 'react';
 import { useAtom } from 'jotai';
 import { motion } from 'motion/react';
 import { modeAtom } from '../UI';
 import { KeyCap } from './KeyCap';
-import { AUDIO_SRC, fmt } from './shared';
+import { fmt } from './shared';
 
 interface MiniPlayerProps {
   onExpand: () => void;
+  allowExpand?: boolean;
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  onTogglePlay: () => void;
+  onSeek: (delta: number) => void;
+  onBarClick: (t: number) => void;
 }
 
-export function MiniPlayer({ onExpand }: MiniPlayerProps) {
+export function MiniPlayer({
+  onExpand,
+  allowExpand = true,
+  isPlaying,
+  currentTime,
+  duration,
+  onTogglePlay,
+  onSeek,
+  onBarClick,
+}: MiniPlayerProps) {
   const [isReadingMode] = useAtom(modeAtom);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const audioRef = useRef<HTMLAudioElement>(null);
   const shellTone = '#ede8df';
   const accent = '#0d2a40';
   const accentBright = '#7ec8e3';
@@ -25,29 +37,27 @@ export function MiniPlayer({ onExpand }: MiniPlayerProps) {
   const togglePlay = useCallback(
     (e: ReactMouseEvent) => {
       e.stopPropagation();
-      const audio = audioRef.current;
-      if (!audio) return;
-      isPlaying ? audio.pause() : audio.play().catch(console.warn);
+      onTogglePlay();
     },
-    [isPlaying],
+    [onTogglePlay],
   );
 
-  const seek = useCallback((delta: number, e: ReactMouseEvent) => {
-    e.stopPropagation();
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = Math.max(0, Math.min(audio.duration || 0, audio.currentTime + delta));
-  }, []);
+  const seek = useCallback(
+    (delta: number, e: ReactMouseEvent) => {
+      e.stopPropagation();
+      onSeek(delta);
+    },
+    [onSeek],
+  );
 
   const handleBarClick = useCallback(
     (e: ReactMouseEvent<HTMLDivElement>) => {
       e.stopPropagation();
-      const audio = audioRef.current;
-      if (!audio || !duration) return;
+      if (!duration) return;
       const rect = e.currentTarget.getBoundingClientRect();
-      audio.currentTime = ((e.clientX - rect.left) / rect.width) * duration;
+      onBarClick(((e.clientX - rect.left) / rect.width) * duration);
     },
-    [duration],
+    [duration, onBarClick],
   );
 
   const pct = duration ? (currentTime / duration) * 100 : 0;
@@ -82,46 +92,48 @@ export function MiniPlayer({ onExpand }: MiniPlayerProps) {
         />
 
         <div style={{ display: 'flex', gap: 10, position: 'relative' }}>
-          <motion.button
-            onClick={onExpand}
-            aria-label="Open full player"
-            whileHover={{ scale: 1.18 }}
-            whileTap={{ scale: 0.9 }}
-            style={{
-              position: 'absolute',
-              top: -12,
-              right: -12,
-              width: 26,
-              height: 26,
-              borderRadius: 7,
-              background: 'rgba(126,200,227,0.06)',
-              border: '1px solid rgba(126,200,227,0.18)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 0,
-              zIndex: 10,
-            }}
-          >
-            <motion.div
-              animate={{ scale: [1, 1.55], opacity: [0.35, 0] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeOut' }}
+          {allowExpand && (
+            <motion.button
+              onClick={onExpand}
+              aria-label="Open full player"
+              whileHover={{ scale: 1.18 }}
+              whileTap={{ scale: 0.9 }}
               style={{
                 position: 'absolute',
-                inset: -1,
-                borderRadius: 8,
-                border: '1px solid rgba(126,200,227,0.5)',
-                pointerEvents: 'none',
+                top: -12,
+                right: -12,
+                width: 26,
+                height: 26,
+                borderRadius: 7,
+                background: isReadingMode ? 'rgba(126,200,227,0.06)' : 'rgba(0,35,102,0.06)',
+                border: isReadingMode ? '1px solid rgba(126,200,227,0.45)' : '1px solid rgba(0,35,102,0.45)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 0,
+                zIndex: 10,
               }}
-            />
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-              <path d="M1 4.5V1h3.5" stroke="#7ec8e3" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
-              <path d="M12 4.5V1H8.5" stroke="#7ec8e3" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
-              <path d="M1 8.5V12h3.5" stroke="#7ec8e3" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
-              <path d="M12 8.5V12H8.5" stroke="#7ec8e3" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
-            </svg>
-          </motion.button>
+            >
+              <motion.div
+                animate={{ scale: [1, 1.55], opacity: [0.35, 0] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeOut' }}
+                style={{
+                  position: 'absolute',
+                  inset: -1,
+                  borderRadius: 8,
+                  border: isReadingMode ? '1px solid rgba(126,200,227,0.5)' : '1px solid rgba(0,35,102,0.4)',
+                  pointerEvents: 'none',
+                }}
+              />
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M1 4.5V1h3.5" stroke={isReadingMode ? '#7ec8e3' : '#002366'} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+                <path d="M12 4.5V1H8.5" stroke={isReadingMode ? '#7ec8e3' : '#002366'} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+                <path d="M1 8.5V12h3.5" stroke={isReadingMode ? '#7ec8e3' : '#002366'} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+                <path d="M12 8.5V12H8.5" stroke={isReadingMode ? '#7ec8e3' : '#002366'} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+              </svg>
+            </motion.button>
+          )}
 
           <KeyCap size={64} stem={5} onClick={(e) => seek(-10, e)} readingMode={isReadingMode}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
@@ -178,7 +190,7 @@ export function MiniPlayer({ onExpand }: MiniPlayerProps) {
         <div style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 5 }}>
           <div
             onClick={handleBarClick}
-            style={{ height: 3, borderRadius: 2, cursor: 'pointer', background: 'rgba(255,255,255,0.07)', position: 'relative' }}
+            style={{ height: 3, borderRadius: 2, cursor: 'pointer', background: isReadingMode ? 'rgba(255,255,255,0.07)' : 'rgba(0,35,102,0.12)', position: 'relative' }}
           >
             <div
               style={{
@@ -187,9 +199,9 @@ export function MiniPlayer({ onExpand }: MiniPlayerProps) {
                 top: 0,
                 height: '100%',
                 width: `${pct}%`,
-                background: 'linear-gradient(90deg,rgba(0,180,220,0.7),#7ec8e3)',
+                background: isReadingMode ? 'linear-gradient(90deg,rgba(0,180,220,0.7),#7ec8e3)' : 'linear-gradient(90deg,rgba(0,35,102,0.7),#002366)',
                 borderRadius: 2,
-                boxShadow: '0 0 6px rgba(126,200,227,0.5)',
+                boxShadow: isReadingMode ? '0 0 6px rgba(126,200,227,0.5)' : '0 0 4px rgba(0,35,102,0.3)',
                 transition: 'width 0.25s linear',
               }}
             />
@@ -203,37 +215,19 @@ export function MiniPlayer({ onExpand }: MiniPlayerProps) {
                   width: 7,
                   height: 7,
                   borderRadius: '50%',
-                  background: '#7ec8e3',
-                  boxShadow: '0 0 6px rgba(126,200,227,0.9)',
+                  background: isReadingMode ? '#7ec8e3' : '#002366',
+                  boxShadow: isReadingMode ? '0 0 6px rgba(126,200,227,0.9)' : '0 0 4px rgba(0,35,102,0.5)',
                   transition: 'left 0.25s linear',
                 }}
               />
             )}
           </div>
-          <span style={{ fontSize: 8, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.22)' }}>
+          <span style={{ fontSize: 8, letterSpacing: '0.12em', color: isReadingMode ? 'rgba(255,255,255,0.22)' : 'rgba(0,35,102,0.55)' }}>
             {fmt(currentTime)}
             {duration ? ` / ${fmt(duration)}` : ''}
           </span>
         </div>
       </motion.div>
-
-      <audio
-        ref={audioRef}
-        src={AUDIO_SRC}
-        preload="metadata"
-        onLoadedMetadata={() => {
-          if (audioRef.current) setDuration(audioRef.current.duration);
-        }}
-        onTimeUpdate={() => {
-          if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
-        }}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onEnded={() => {
-          setIsPlaying(false);
-          setCurrentTime(0);
-        }}
-      />
     </motion.div>
   );
 }

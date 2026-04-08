@@ -10,11 +10,15 @@ export interface Chapter {
 }
 
 export const CHAPTERS: Chapter[] = [
-  { title: 'THE_EXPERIMENT', startTime: 0, endTime: 36 },
-  { title: 'DATA_SYNTHESIS', startTime: 36, endTime: 72 },
-  { title: 'NEURAL_FEEDBACK', startTime: 72, endTime: 108 },
-  { title: 'SYSTEM_FAILURE', startTime: 108, endTime: 144 },
-  { title: 'RECOVERY_PHASE', startTime: 144, endTime: 180 },
+  { title: 'TECH_AS_ART',           startTime: 0,   endTime: 82  },
+  { title: 'CODE_AS_CHEMICAL',      startTime: 82,  endTime: 193 },
+  { title: 'NOSTALGIC_ORIGINS',     startTime: 193, endTime: 281 },
+  { title: 'GENERALIST_PATH',       startTime: 281, endTime: 404 },
+  { title: 'PATTERN_RECOGNITION',   startTime: 404, endTime: 500 },
+  { title: 'AI_COGNITIVE_TOOL',     startTime: 500, endTime: 630 },
+  { title: 'CONSUMPTION_TRAP',      startTime: 630, endTime: 840 },
+  { title: 'IMPOSTER_SYNDROME',     startTime: 840, endTime: 930 },
+  { title: 'CREATIVE_FREEDOM',      startTime: 930, endTime: 960 },
 ];
 
 export const N = CHAPTERS.length;

@@ -263,7 +263,7 @@ export const Background = ({ isReadingMode }: BackgroundProps) => {
         hintHiddenRef.current = true;
       }
     };
-    const hintTimer = setTimeout(hideHint, 8000);
+    const hintTimer = setTimeout(hideHint, 18000);
 
     let rafId = 0;
     let isRendering = false;
@@ -345,6 +345,12 @@ export const Background = ({ isReadingMode }: BackgroundProps) => {
 
   return (
     <>
+      <style>{`
+        @keyframes floatHint {
+          0%, 100% { transform: translateY(-50%); }
+          50%       { transform: translateY(calc(-50% - 7px)); }
+        }
+      `}</style>
       <canvas
         ref={glCanvasRef}
         aria-hidden="true"
@@ -362,10 +368,10 @@ export const Background = ({ isReadingMode }: BackgroundProps) => {
           position: "fixed",
           top: "50%",
           left: "6%",
-          transform: "translateY(-50%)",
+          animation: "floatHint 2.8s ease-in-out infinite",
           zIndex: 11,
           fontFamily: "Helvetica, Arial, sans-serif",
-          fontSize: 7,
+          fontSize: 10,
           letterSpacing: "0.25em",
           textTransform: "lowercase",
           color: isReadingMode ? "rgba(255,255,255,0.55)" : "rgba(0,35,102,0.55)",
